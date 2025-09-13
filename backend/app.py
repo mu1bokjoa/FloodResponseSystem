@@ -62,7 +62,7 @@ GRID_COORDS = [
 ]
 
 try:
-    flood_model = joblib.load(os.path.join(basedir, '../ai/flood_predictor_model.pkl'))
+    flood_model = joblib.load(os.path.join(basedir, 'flood_predictor_model.pkl'))
     print("AI 모델 로드 성공!")
 except FileNotFoundError:
     flood_model = None

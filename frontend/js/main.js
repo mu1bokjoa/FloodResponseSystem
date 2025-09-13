@@ -158,21 +158,24 @@ function addFloodZoneMarkers() {
     const content = document.createElement("div");
     content.className = "flood-zone-marker";
     content.innerHTML = `
-            <div style="background: #ff6b6b; color: white; padding: 8px 12px; 
-                        border-radius: 20px; font-weight: bold; font-size: 14px; 
-                        box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer;
-                        border: 2px solid white;">
-                🚨 ${zone.name}
-            </div>
-        `;
+      <div style="background: #ff6b6b; color: white; padding: 8px 12px; 
+                  border-radius: 20px; font-weight: bold; font-size: 14px; 
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer;
+                  border: 2px solid white;">
+        🚨 ${zone.name}
+      </div>
+    `;
 
     const customOverlay = new kakao.maps.CustomOverlay({
       position: markerPosition,
       content: content,
       yAnchor: 1.5,
+      zIndex: 20  // 상습 침수 지역 마커가 위에 표시되도록
     });
 
+    customOverlay.isFloodZone = true; // 상습 침수 지역 마커 표시
     customOverlay.setMap(map);
+    currentOverlays.push(customOverlay);
 
     // 클릭 이벤트
     content.addEventListener("click", () => {
@@ -237,25 +240,34 @@ async function loadLocations() {
   }
 }
 
+// ########## 수정된 updateReports 함수 ##########
 async function updateReports(isInitialLoad = false) {
   try {
     const response = await fetch("/api/reports", { cache: "no-cache" });
     const reports = await response.json();
     const reportFeed = document.getElementById("report-feed");
 
-    if (currentOverlays)
-      currentOverlays.forEach((overlay) => {
+    // 기존 제보 마커만 제거 (상습 침수 지역 마커는 유지)
+    if (currentOverlays) {
+      const floodZoneMarkers = currentOverlays.filter(overlay => overlay.isFloodZone);
+      const reportMarkers = currentOverlays.filter(overlay => !overlay.isFloodZone);
+      
+      // 제보 마커만 제거
+      reportMarkers.forEach((overlay) => {
         if (overlay.infowindow && overlay.infowindow.getMap()) {
           overlay.infowindow.close();
         }
         overlay.setMap(null);
       });
-    currentOverlays = [];
+      
+      // 상습 침수 지역 마커만 유지
+      currentOverlays = floodZoneMarkers;
+    }
 
+    // 제보 목록 표시
     if (!reportFeed || reports.length === 0) {
       if (reportFeed)
-        reportFeed.innerHTML =
-          '<p class="placeholder">아직 제보가 없습니다.</p>';
+        reportFeed.innerHTML = '<p class="placeholder">아직 제보가 없습니다.</p>';
     } else {
       reportFeed.innerHTML = "";
       reports.forEach((r) => {
@@ -274,29 +286,34 @@ async function updateReports(isInitialLoad = false) {
       });
     }
 
+    // 새로운 제보 마커 추가
     reports.forEach((r) => {
       const markerContent = document.createElement("div");
-      markerContent.className = "custom-marker";
+      markerContent.className = "custom-marker report-marker";
       markerContent.innerHTML = r.severity.charAt(0);
 
-      const now = new Date();
-      const createdAt = new Date(r.created_at);
-      const ageInMinutes = (now - createdAt) / 1000 / 60;
-
-      if (ageInMinutes < 5) {
-        markerContent.classList.add("new-marker");
-      } else {
-        markerContent.classList.add("old-marker");
+      // 심각도에 따른 배경색 직접 설정
+      switch(r.severity) {
+        case '주의':
+          markerContent.style.backgroundColor = '#ff9500'; // 주황색
+          break;
+        case '위험':
+          markerContent.style.backgroundColor = '#ff3b30'; // 빨간색
+          break;
+        case '심각':
+          markerContent.style.backgroundColor = '#5856d6'; // 파란색
+          break;
+        default:
+          markerContent.style.backgroundColor = '#007aff'; // 기본 파란색
       }
 
       const customOverlay = new kakao.maps.CustomOverlay({
         position: new kakao.maps.LatLng(r.lat, r.lng),
         content: markerContent,
+        zIndex: 10
       });
 
-      const infowindowContent = `<div class="infowindow-content"><strong>${
-        r.username
-      }님의 제보 (${r.severity})</strong><p>${r.content}</p>${
+      const infowindowContent = `<div class="infowindow-content"><strong>${r.username}님의 제보 (${r.severity})</strong><p>${r.content}</p>${
         r.image_filename
           ? `<img src="/uploads/${r.image_filename}" class="infowindow-image">`
           : ""
@@ -311,15 +328,12 @@ async function updateReports(isInitialLoad = false) {
       });
 
       customOverlay.infowindow = infowindow;
+      customOverlay.isFloodZone = false; // 제보 마커 표시
       customOverlay.setMap(map);
       currentOverlays.push(customOverlay);
     });
 
-    if (
-      !isInitialLoad &&
-      reports.length > 0 &&
-      reports[0].id > latestReportId
-    ) {
+    if (!isInitialLoad && reports.length > 0 && reports[0].id > latestReportId) {
       showNotification("새로운 침수 제보가 등록되었습니다!");
     }
 
@@ -379,17 +393,9 @@ function setupEventListeners() {
       selectedSigungu &&
       locations[selectedSido]?.[selectedSigungu]
     ) {
-      // 3개 지역의 동만 표시
-      const validDongs =
-        selectedSigungu === "달서구"
-          ? ["죽전동"]
-          : selectedSigungu === "북구"
-          ? ["노곡동"]
-          : ["효목동"];
+      // 모든 동 표시 (제한 없음)
       Object.keys(locations[selectedSido][selectedSigungu]).forEach((dong) => {
-        if (validDongs.includes(dong)) {
-          dongSelect.add(new Option(dong, dong));
-        }
+        dongSelect.add(new Option(dong, dong));
       });
     }
   });
@@ -688,9 +694,17 @@ function handleSearchAndMoveMap() {
     if (zone) {
       selectFloodZone(zone.id);
     } else {
-      showCenterAlert(
-        "모니터링 대상 지역이 아닙니다.\n(노곡동, 동촌유원지, 죽전네거리만 검색 가능)"
-      );
+      // 일반 지역 검색도 허용
+      geocoder.addressSearch(searchValue, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+          map.setCenter(coords);
+          map.setLevel(5);
+          showCenterAlert("선택한 위치로 이동했습니다.");
+        } else {
+          showCenterAlert("검색 결과가 없습니다.");
+        }
+      });
     }
   } else {
     const sido = sidoSelect.value;
@@ -741,23 +755,34 @@ async function updateWeatherInfo(sido, sigungu, dong) {
       const coords = new kakao.maps.LatLng(zone.lat, zone.lng);
       map.setCenter(coords);
       map.setLevel(5);
+    } else {
+      // 일반 지역의 경우 geocoder로 좌표 찾기
+      const address = `${sido} ${sigungu} ${dong}`;
+      geocoder.addressSearch(address, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+          map.setCenter(coords);
+          map.setLevel(5);
+        }
+      });
     }
   } catch (error) {
     console.error("Error updating weather info:", error);
-    showCenterAlert(`날씨 정보를 가져오는 데 실패했습니다: ${error.message}`); // alert 대신 showCenterAlert 사용
+    showCenterAlert(`날씨 정보를 가져오는 데 실패했습니다: ${error.message}`);
   }
 }
 
 function handleReportClick() {
   if (!currentUser.logged_in) {
-    showCenterAlert("로그인 후 제보할 수 있습니다."); // alert 대신 showCenterAlert 사용
+    showCenterAlert("로그인 후 제보할 수 있습니다.");
     openAuthModal(true);
     return;
   }
   isReportingMode = true;
-  showCenterAlert("3개 상습 침수 지역 중 한 곳을 클릭하여 제보해주세요.");
+  showCenterAlert("지도에서 제보하고 싶은 위치를 클릭해주세요.");
 }
 
+// ########## 수정된 openReportModal 함수 ##########
 function openReportModal(lat, lng) {
   if (!currentUser.logged_in) {
     showCenterAlert("로그인 후 제보할 수 있습니다.");
@@ -765,18 +790,25 @@ function openReportModal(lat, lng) {
     return;
   }
 
-  // 클릭한 위치가 3개 지역 중 하나인지 확인
-  const nearestZone = findNearestFloodZone(lat, lng);
-
+  // 클릭한 실제 위치 사용
   document.getElementById("report-post-form").reset();
-  document.getElementById("report-lat-input").value = nearestZone.lat;
-  document.getElementById("report-lng-input").value = nearestZone.lng;
+  document.getElementById("report-lat-input").value = lat;
+  document.getElementById("report-lng-input").value = lng;
 
-  // 지역명 표시 (hidden input 추가 필요)
+  // 가장 가까운 지역명 찾기 (참고용)
+  const nearestZone = findNearestFloodZone(lat, lng);
+  
+  // 기존 zone_name input 제거 (있다면)
+  const existingZoneInput = document.querySelector('input[name="zone_name"]');
+  if (existingZoneInput) {
+    existingZoneInput.remove();
+  }
+  
+  // 지역명 표시 (참고용)
   const zoneInput = document.createElement("input");
   zoneInput.type = "hidden";
   zoneInput.name = "zone_name";
-  zoneInput.value = nearestZone.name;
+  zoneInput.value = `근처: ${nearestZone.name}`;
   document.getElementById("report-post-form").appendChild(zoneInput);
 
   reportPostModal.style.display = "flex";

@@ -215,6 +215,7 @@ button:hover {
   color: white;
 }
 
+/* ########## 마커 스타일 수정 ########## */
 .custom-marker {
   color: white;
   border-radius: 50%;
@@ -226,9 +227,25 @@ button:hover {
   font-weight: bold;
   font-size: 14px;
   border: 2px solid white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   cursor: pointer;
+  position: relative;
 }
+
+/* 심각도별 마커 색상 */
+.custom-marker.severity-주의 {
+  background-color: #ff9500; /* 주황색 */
+}
+
+.custom-marker.severity-위험 {
+  background-color: #ff3b30; /* 빨간색 */
+}
+
+.custom-marker.severity-심각 {
+  background-color: #5856d6; /* 파란색 */
+}
+
+/* 기존 old-marker, new-marker 클래스는 유지 (fallback용) */
 .custom-marker.old-marker {
   background-color: var(--primary-color);
 }
@@ -371,7 +388,7 @@ button:hover {
   background-color: #5856d6;
 }
 .severity-selector input[type="radio"]:checked + .severity-label::before {
-  content: "✔ ";
+  content: "✓ ";
   font-weight: bold;
 }
 
@@ -618,7 +635,8 @@ button:hover {
 #notification-container {
   position: fixed;
   top: 20px;
-  right: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1001;
 }
 
@@ -633,6 +651,7 @@ button:hover {
   display: flex;
   align-items: center;
   gap: 10px;
+  white-space: nowrap;
 }
 
 @keyframes fadeInOut {
@@ -776,6 +795,17 @@ button:hover {
   font-size: 15px;
   color: var(--text-color);
   animation: slideDown 0.3s ease;
+}
+/* ########## 수정 사항 ##########*/
+/* 마커 z-index 관리 */
+.flood-zone-marker {
+    position: relative;
+    z-index: 100 !important; /* 상습 침수 지역 마커가 항상 위에 */
+}
+
+.custom-marker.report-marker {
+    position: relative;
+    z-index: 50; /* 제보 마커는 아래에 */
 }
 
 @keyframes slideDown {
