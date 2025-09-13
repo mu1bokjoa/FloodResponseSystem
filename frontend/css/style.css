@@ -33,8 +33,48 @@ body {
   background-color: var(--card-background);
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 실시간 제보 카드에 flex 속성 추가 */
+#report-feed-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#report-feed {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 400px;
+  padding-right: 5px;
+}
+
+/* 스크롤바 스타일링 */
+#report-feed::-webkit-scrollbar {
+  width: 6px;
+}
+
+#report-feed::-webkit-scrollbar-track {
+  background: var(--secondary-color);
+  border-radius: 3px;
+}
+
+#report-feed::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+#report-feed::-webkit-scrollbar-thumb:hover {
+  background: var(--text-light);
 }
 
 .map-panel {
@@ -146,12 +186,14 @@ body {
   margin-bottom: 25px;
   border: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
 }
 
 .card h2 {
   font-size: 20px;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 15px 0;
 }
 
 input[type="search"],
@@ -694,6 +736,8 @@ button:hover {
   max-width: 900px;
   margin: 0 auto;
   padding: 40px 20px;
+  min-height: 100vh;
+  overflow-y: auto;
 }
 .page-header {
   display: flex;
@@ -718,6 +762,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding-bottom: 40px;
 }
 .community-report-item {
   background-color: var(--card-background);
@@ -732,10 +777,30 @@ button:hover {
 }
 .report-image {
   max-width: 100%;
+  width: 100%;
   height: auto;
   display: block;
   margin-top: 15px;
   border-radius: 8px;
+  object-fit: contain;
+}
+
+/* community.html 페이지의 이미지 스타일 일관성 유지 */
+.community-report-item .report-image {
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+  margin-top: 15px;
+  border-radius: 8px;
+}
+
+/* community.html 페이지 body 스크롤 활성화 */
+body.community-page {
+  overflow: auto;
+  height: auto;
 }
 
 /* 위험도 레벨 색상 개선 */
@@ -796,7 +861,7 @@ button:hover {
   color: var(--text-color);
   animation: slideDown 0.3s ease;
 }
-/* ########## 수정 사항 ##########*/
+
 /* 마커 z-index 관리 */
 .flood-zone-marker {
     position: relative;

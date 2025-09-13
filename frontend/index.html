@@ -199,6 +199,7 @@
             name="file"
             id="report-file-input"
             accept="image/*,video/*"
+            style="display: none"
           />
           <button type="submit">제보하기</button>
         </form>
@@ -264,50 +265,52 @@
 
     <div class="container">
       <div class="info-panel">
-        <header class="panel-header">
-          <h1>대구 상습 침수 지역 위험 정보</h1>
-        </header>
-        <div class="card">
-          <h2>지역 선택</h2>
-          <input
-            type="search"
-            id="location-search"
-            placeholder="읍/면/동 이름으로 검색 후 Enter"
-          />
-          <div class="location-selector">
-            <select id="sido-select">
-              <option value="">시/도 선택</option>
-            </select>
-            <select id="sigungu-select">
-              <option value="">시/군/구 선택</option>
-            </select>
-            <select id="dong-select">
-              <option value="">읍/면/동 선택</option>
-            </select>
-          </div>
-          <button id="search-btn">조회하기</button>
-        </div>
-        <div class="card" id="weather-info-card" style="display: none">
-          <h2>실시간 위험 정보</h2>
-          <div id="weather-info">
-            <p><strong id="area-name"></strong></p>
-            <div class="info-item">
-              <span>현재 예상 강수량</span>
-              <span id="rainfall">-- mm/h</span>
+        <div class="info-panel-content">
+          <header class="panel-header">
+            <h1>대구 상습 침수 지역 위험 정보</h1>
+          </header>
+          <div class="card">
+            <h2>지역 선택</h2>
+            <input
+              type="search"
+              id="location-search"
+              placeholder="읍/면/동 이름으로 검색 후 Enter"
+            />
+            <div class="location-selector">
+              <select id="sido-select">
+                <option value="">시/도 선택</option>
+              </select>
+              <select id="sigungu-select">
+                <option value="">시/군/구 선택</option>
+              </select>
+              <select id="dong-select">
+                <option value="">읍/면/동 선택</option>
+              </select>
             </div>
-            <div class="info-item">
-              <span>AI 예측 위험도</span>
-              <span id="risk-level" class="safe">--</span>
+            <button id="search-btn">조회하기</button>
+          </div>
+          <div class="card" id="weather-info-card" style="display: none">
+            <h2>실시간 위험 정보</h2>
+            <div id="weather-info">
+              <p><strong id="area-name"></strong></p>
+              <div class="info-item">
+                <span>현재 예상 강수량</span>
+                <span id="rainfall">-- mm/h</span>
+              </div>
+              <div class="info-item">
+                <span>AI 예측 위험도</span>
+                <span id="risk-level" class="safe">--</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <h2>실시간 제보</h2>
-            <a href="/community" class="more-link">더보기 &rarr;</a>
-          </div>
-          <div id="report-feed">
-            <p class="placeholder">아직 제보가 없습니다.</p>
+          <div class="card" id="report-feed-card">
+            <div class="card-header">
+              <h2>실시간 제보</h2>
+              <a href="/community" class="more-link">더보기 &rarr;</a>
+            </div>
+            <div id="report-feed">
+              <p class="placeholder">아직 제보가 없습니다.</p>
+            </div>
           </div>
         </div>
       </div>
