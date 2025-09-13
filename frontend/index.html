@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI 침수 위험 경보 시스템 (대구/경북)</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    />
+    <link rel="stylesheet" href="/frontend/css/style.css?v=final-version" />
+  </head>
+  <body>
+    <div id="auth-modal" class="modal-background" style="display: none">
+      <div class="modal-content">
+        <button id="modal-close-btn" class="close-btn">&times;</button>
+        <h2 id="modal-title">로그인</h2>
+        <form id="auth-form" novalidate>
+          <div id="signup-fields" class="form-fields">
+            <div class="input-group">
+              <input
+                type="text"
+                id="signup-username"
+                name="username"
+                placeholder="아이디"
+                required
+              />
+              <button type="button" id="check-username-btn" class="check-btn">
+                중복확인
+              </button>
+            </div>
+            <div id="username-feedback" class="feedback-msg"></div>
+
+            <div class="input-group">
+              <input
+                type="email"
+                id="signup-email"
+                name="email"
+                placeholder="이메일"
+                required
+              />
+              <button type="button" id="check-email-btn" class="check-btn">
+                중복확인
+              </button>
+            </div>
+            <div id="email-feedback" class="feedback-msg"></div>
+          </div>
+
+          <div id="login-fields" class="form-fields">
+            <div class="input-group">
+              <input
+                type="text"
+                id="login-username"
+                name="username"
+                placeholder="아이디"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="input-group password-group">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="비밀번호"
+              required
+            />
+            <button
+              type="button"
+              id="password-toggle-btn"
+              class="password-toggle"
+            >
+              <svg
+                class="icon-eye"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <svg
+                class="icon-eye-slash"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="display: none"
+              >
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                <path
+                  d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"
+                />
+                <path
+                  d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"
+                />
+                <line x1="2" x2="22" y1="2" y2="22" />
+              </svg>
+            </button>
+          </div>
+          <div id="password-feedback" class="feedback-msg">
+            <ul id="password-criteria">
+              <li id="pass-length">8자 이상</li>
+              <li id="pass-special">특수문자 포함</li>
+              <li id="pass-num">숫자 포함</li>
+            </ul>
+          </div>
+
+          <div id="confirm-password-field" class="input-group">
+            <input
+              type="password"
+              id="confirm-password"
+              name="confirm-password"
+              placeholder="비밀번호 확인"
+              required
+            />
+          </div>
+          <div id="confirm-password-feedback" class="feedback-msg"></div>
+
+          <button type="submit" id="modal-submit-btn" class="submit-btn">
+            로그인
+          </button>
+        </form>
+        <div class="modal-footer">
+          <span id="modal-switch-text">계정이 없으신가요?</span>
+          <a href="#" id="modal-switch-link">회원가입</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="report-post-modal" class="modal-background" style="display: none">
+      <div class="modal-content">
+        <h2>침수 제보 작성</h2>
+        <form id="report-post-form">
+          <input
+            type="text"
+            name="lat"
+            id="report-lat-input"
+            readonly
+            required
+          />
+          <input
+            type="text"
+            name="lng"
+            id="report-lng-input"
+            readonly
+            required
+          />
+          <div class="severity-selector">
+            <input
+              type="radio"
+              id="sev-report-주의"
+              name="severity"
+              value="주의"
+              checked
+            /><label for="sev-report-주의" class="severity-label sev-주의"
+              >주의</label
+            >
+            <input
+              type="radio"
+              id="sev-report-위험"
+              name="severity"
+              value="위험"
+            /><label for="sev-report-위험" class="severity-label sev-위험"
+              >위험</label
+            >
+            <input
+              type="radio"
+              id="sev-report-심각"
+              name="severity"
+              value="심각"
+            /><label for="sev-report-심각" class="severity-label sev-심각"
+              >심각</label
+            >
+          </div>
+          <textarea
+            name="content"
+            id="report-content-input"
+            placeholder="제보 내용을 입력하세요."
+            rows="5"
+            required
+          ></textarea>
+          <label for="report-file-input" class="file-label"
+            >사진/영상 첨부</label
+          >
+          <input
+            type="file"
+            name="file"
+            id="report-file-input"
+            accept="image/*,video/*"
+          />
+          <button type="submit">제보하기</button>
+        </form>
+        <button id="report-modal-close-btn" class="close-btn">&times;</button>
+      </div>
+    </div>
+
+    <div id="edit-report-modal" class="modal-background" style="display: none">
+      <div class="modal-content">
+        <h2>제보 수정</h2>
+        <form id="edit-report-form">
+          <input type="hidden" id="edit-report-id" />
+          <div class="severity-selector">
+            <input
+              type="radio"
+              id="sev-edit-주의"
+              name="edit-severity"
+              value="주의"
+            /><label for="sev-edit-주의" class="severity-label sev-주의"
+              >주의</label
+            >
+            <input
+              type="radio"
+              id="sev-edit-위험"
+              name="edit-severity"
+              value="위험"
+            /><label for="sev-edit-위험" class="severity-label sev-위험"
+              >위험</label
+            >
+            <input
+              type="radio"
+              id="sev-edit-심각"
+              name="edit-severity"
+              value="심각"
+            /><label for="sev-edit-심각" class="severity-label sev-심각"
+              >심각</label
+            >
+          </div>
+          <textarea
+            id="edit-content-input"
+            placeholder="제보 내용을 입력하세요."
+            rows="5"
+            required
+          ></textarea>
+          <button type="submit">수정하기</button>
+        </form>
+        <button id="edit-modal-close-btn" class="close-btn">&times;</button>
+      </div>
+    </div>
+
+    <div id="confirm-modal" class="modal-background" style="display: none">
+      <div class="modal-content modal-sm">
+        <h2>삭제 확인</h2>
+        <p class="instruction-text">정말로 이 제보를 삭제하시겠습니까?</p>
+        <div class="confirm-actions">
+          <button id="confirm-cancel-btn" class="btn-secondary">취소</button>
+          <button id="confirm-delete-btn" class="btn-danger">삭제</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <div class="container">
+      <div class="info-panel">
+        <header class="panel-header">
+          <h1>대구 상습침수 위험 정보</h1>
+        </header>
+        <div class="card">
+          <h2>지역 선택</h2>
+          <input
+            type="search"
+            id="location-search"
+            placeholder="읍/면/동 이름으로 검색 후 Enter"
+          />
+          <div class="location-selector">
+            <select id="sido-select">
+              <option value="">시/도 선택</option>
+            </select>
+            <select id="sigungu-select">
+              <option value="">시/군/구 선택</option>
+            </select>
+            <select id="dong-select">
+              <option value="">읍/면/동 선택</option>
+            </select>
+          </div>
+          <button id="search-btn">조회하기</button>
+        </div>
+        <div class="card" id="weather-info-card" style="display: none">
+          <h2>실시간 위험 정보</h2>
+          <div id="weather-info">
+            <p><strong id="area-name"></strong></p>
+            <div class="info-item">
+              <span>현재 예상 강수량</span>
+              <span id="rainfall">-- mm/h</span>
+            </div>
+            <div class="info-item">
+              <span>AI 예측 위험도</span>
+              <span id="risk-level" class="safe">--</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>실시간 제보</h2>
+            <a href="/community" class="more-link">더보기 &rarr;</a>
+          </div>
+          <div id="report-feed">
+            <p class="placeholder">아직 제보가 없습니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="map-panel">
+        <div id="auth-status"></div>
+        <div id="map"></div>
+        <button id="report-btn">침수 제보하기</button>
+      </div>
+    </div>
+
+    <script
+      type="text/javascript"
+      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=0e88cebba9fe9bcc3843359811d5d1c4&libraries=services"
+    ></script>
+    <script src="/frontend/js/main.js?v=final-version"></script>
+  </body>
+</html>
