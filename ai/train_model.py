@@ -28,10 +28,11 @@ df['risk_level_encoded'] = df['risk_level'].map(risk_map)
 
 print("2. 데이터 전처리 및 분리...")
 features = ['rainfall_mm', 'river_level_m']
-target = 'risk_level_encoded' # <-- 숫자로 변환된 열의 이름을 변수로 지정
+# 숫자로 변환된 열의 이름을 변수로 지정
+target = 'risk_level_encoded'
 
 X = df[features]
-# ### FIXED: AI가 이해할 수 있도록 숫자로 변환된 열(target)을 정답 데이터로 사용 ###
+# 수정: AI가 이해할 수 있도록 숫자로 변환된 열(target)을 정답 데이터로 사용 ###
 y = df[target]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
